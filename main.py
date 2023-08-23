@@ -1,6 +1,7 @@
-# importing Pygame and random 
+# importing Pygame and random and math
 import pygame
 import random
+import math
 
 # initializate pygame
 pygame.init()
@@ -39,7 +40,7 @@ def player(x,y):
 enemy_x = 360
 enemy_y = 30
 enemy_img = pygame.image.load("sprites/nave-2.png")
-enemy_x_change = 0.4
+enemy_x_change = 3
 enemy_y_change = 30
 def enemy(x,y):
     screen.blit(enemy_img, (x,y))
@@ -48,7 +49,7 @@ def enemy(x,y):
 bala_img = pygame.image.load("./sprites/bala-laser.png")
 bala_x = 370
 bala_y = 500
-bala_y_change = 10
+bala_y_change = 30
 bala_x_change = 0
 bullet_state = True
 def bala(x,y):
@@ -58,9 +59,18 @@ def fire(x,y):
     global bullet_state
     bullet_state = False
     screen.blit(bala_img, (x, y))
+#Collision
+def is_collision (b_x, b_y, e_x, e_y):
+    distance = math.sqrt((e_x - b_x)**2 + (e_y - b_y)**2)
+    if distance < 27:
+        return True
+    else:
+        return False
+
 
 # game loop
 running = True
+clock = pygame.time.Clock()
 
 while running:
     for event in pygame.event.get():
@@ -70,16 +80,17 @@ while running:
         # keyboard inputs
         if event.type == pygame. KEYDOWN :
             if event. key == pygame.K_LEFT :
-                player_x_change = -0.5
+                player_x_change = -4
             if event. key == pygame.K_RIGHT :
-                player_x_change = 0.5
-            if event.key  == pygame.K_SPACE:
-                fire(bala_x, bala_y)
+                player_x_change = 4
+            if event.key  == pygame.K_SPACE and bullet_state == True:
+                bala_x = player_x
+                fire(bala_x,bala_y)
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT :
                 player_x_change = 0
-            if event.key == pygame.K_RIGHT :
+            if event.key == pygame.K_RIGHT:
                 player_x_change = 0
 
     # blit of the background 
@@ -92,10 +103,7 @@ while running:
         player_x = 0
     elif player_x >= 736 :
         player_x = 736
-    #bala function
     
-    bala(bala_x,bala_y)
-
     # blit of the player
     player(player_x,player_y) 
 
@@ -105,17 +113,28 @@ while running:
     # enemy movements
     enemy_x += enemy_x_change
     if enemy_x <= 0:
-        enemy_x_change = 0.4
+        enemy_x_change = 3
         enemy_y += enemy_y_change
     
     elif enemy_x >= 736 :
-        enemy_x_change = -0.4
+        enemy_x_change = -3
         enemy_y += enemy_y_change
     
     if bullet_state == False:
-         fire(player_x, player_y)
+         fire(bala_x, bala_y)
          bala_y -= bala_y_change
+    
+    if bala_y <= 0:
+        bala_y = 500
+        bullet_state = True
+    collision = is_collision(bala_x, bala_y, enemy_x, enemy_y)
+    if collision:
+        bala_y = 500
+        bullet_state = True
+        enemy_x = random.randint(0, 735)
+        enemy_y = random.randint(50, 150)
     # update the window
+    clock.tick(60)
     pygame.display.flip()
 pygame.quit()
 
