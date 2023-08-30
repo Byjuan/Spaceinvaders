@@ -3,6 +3,8 @@ import pygame
 import random
 import math
 
+from pygame import mixer
+
 # initializate pygame
 pygame.init()
 
@@ -21,6 +23,11 @@ pygame.display.set_caption("Space Invaders  by Juan Andres")
 icon = pygame.image.load("./sprites/nave-1.png")
 pygame.display.set_icon(icon)
 
+#Background sounds
+
+mixer.music.load("1-14. Smashing Windshields.wav")
+mixer.music.play(-1)
+
 # bg image 
 background = pygame.image.load("sprites\espacio.png")
 
@@ -28,7 +35,7 @@ background = pygame.image.load("sprites\espacio.png")
 screen = pygame.display.set_mode(size)
 
 # Score font 
-score_font = pygame.font.Font("upheavtt.ttf", 32)
+score_font = pygame.font.Font("upheavtt.ttf", 50)
 
 #variable score
 score = 0
@@ -38,9 +45,12 @@ text_x = 10
 text_y = 10 
 
 # game over font 
-go_x = 200
+go_x = 300
 go_y = 250
  
+#Condition of the game over
+go_condition = True
+
 #player function
 player_x = 370
 player_y = 500
@@ -86,6 +96,7 @@ def fire(x,y):
 #Collision
 def is_collision (b_x, b_y, e_x, e_y):
     distance = math.sqrt((e_x - b_x)**2 + (e_y - b_y)**2)
+    
     if distance < 27:
         return True
     else:
@@ -93,7 +104,14 @@ def is_collision (b_x, b_y, e_x, e_y):
 
 # Function of the text
 def game_over(x,y) :
-    go_text = score_font.render("GAME OVER",True,(55,0,0))
+    global go_condition
+    go_text = score_font.render("GAME OVER",True,(229,22,22))
+    screen.blit(go_text, (x,y))
+    # Game over Sound
+    if go_condition :
+        game_over_sound = mixer.Sound("sprites\sonidos\dark-souls-you-died-sound-effect_hm5sYFG.wav")
+        game_over_sound.play()
+        go_condition = False
     screen.blit(go_text, (x,y))
 
 def show_score(x,y) :
@@ -116,6 +134,9 @@ while running:
             if event. key == pygame.K_RIGHT :
                 player_x_change = 4
             if event.key  == pygame.K_SPACE and bullet_state == True:
+                # Bala sound
+                bullet_sound = mixer.Sound("sprites\sonidos\ImpactBig8Bit GFX030903.wav")
+                bullet_sound.play( )
                 bala_x = player_x
                 fire(bala_x,bala_y)
 
@@ -144,6 +165,8 @@ while running:
         if enemy_y[item] > 440:
             for j in range (number_enemies) :
                 enemy_y[j] = 2000
+            game_over(go_x,go_y)
+            break
             
         collision = is_collision(bala_x, bala_y, enemy_x[item], enemy_y[item])
         if collision:
@@ -151,6 +174,8 @@ while running:
             bullet_state = True
             enemy_x[item] = random.randint(0, 735)
             enemy_y[item] = random.randint(50, 150)
+            explosion_sound = mixer.Sound("sprites\sonidos\mixkit-arcade-game-explosion-2759.wav")
+            explosion_sound.play()
             score += 10 
 
         # blit of the enemy
